@@ -4,16 +4,28 @@ app.py
 This one file is all you need to start off with your FastAPI server!
 """
 
-from typing import Optional
+from typing import Any
 
 import uvicorn
-from fastapi import FastAPI, status
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 
 # Initializing and setting configurations for your FastAPI application is one
 # of the first things you should do in your code.
 app = FastAPI()
 
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None\
+
+items = {
+    "foo": {"name": "Foo", "price": 50.5},
+    "bar": {"name": "Bar", "description": "The Bar Fighters", "price": 35.4, "tax": 20.2},
+    "baz": {"name": "Baz", "description": "There goes my baz", "price": 20, "tax": 1}
+}
 
 # The line starting with "@" is a Python decorator. For this tutorial, you
 # don't need to know exactly how they work, but if you'd like to read more on
@@ -37,6 +49,7 @@ def home():
     return {"message": "This is the home page"}
 
 
+
 # The routes that you specify can also be dynamic, which means that any path
 # that follows the format `/items/[some integer]` is valid. When providing
 # such path parameters, you'll need to follow this specific syntax and state
@@ -49,13 +62,18 @@ def home():
 #
 # will be returned. Note that if `item_id` isn't an integer, FastAPI will
 # return a response containing an error statement instead of our result.
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
 
 
 # TODO: Add POST route for demo
 
+@app.get("/items/{item_id}/name", response_model=Item, response_model_include={"name", "description"})
+async def read_item_name(item_id: str):
+    return items[item_id]
+
+@app.get("/items/{item_id}/public", response_model=Item, response_model_exclude={"tax"})
+async def read_item_public_data(item_id: str):
+    return items[item_id]
+    
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=5000, reload=True)
