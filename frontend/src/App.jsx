@@ -35,13 +35,13 @@ function Calender() {
         </tr>
         
         <tr>
-          <th className='food'>{mon} </th>
-          <th className='food'>{tues} </th>
-          <th className='food'>{wed} </th>
-          <th className='food'>{thurs} </th>
-          <th className='food'>{fri} </th>
-          <th className='food'>{sat} </th>
-          <th className='food'>{sun} </th>
+          <th className={mon == 'meatloaf' ? 'meatloaf' : 'food'}>{mon} </th>
+          <th className={tues == 'meatloaf' ? 'meatloaf' : 'food'}>{tues} </th>
+          <th className={wed == 'meatloaf' ? 'meatloaf' : 'food'}>{wed} </th>
+          <th className={thurs == 'meatloaf' ? 'meatloaf' : 'food'}>{thurs} </th>
+          <th className={fri == 'meatloaf' ? 'meatloaf' : 'food'}>{fri} </th>
+          <th className={sat == 'meatloaf' ? 'meatloaf' : 'food'}>{sat} </th>
+          <th className={sun == 'meatloaf' ? 'meatloaf' : 'food'}>{sun} </th>
 
         </tr>
 
