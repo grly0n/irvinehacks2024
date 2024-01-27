@@ -5,7 +5,7 @@ import "./calendar_component.css"
 const data=["meatloaf","taco", "breadstick", "meatloaf","meatloaf","meatloaf","meatloaf"]
 
 
-function Calender() {
+function Calendar() {
   const date= new Date();
   const current_month=date.getMonth();
   const current_day=date.getDate();
@@ -60,4 +60,4 @@ function Calender() {
 
 
 
-export default Calender
+export default Calendar
