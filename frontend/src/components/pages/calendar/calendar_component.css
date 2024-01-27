@@ -1,0 +1,31 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.Calend{
+  width: 100%;
+  border: 1px solid;
+}
+.days{
+  border: 1px solid;
+  padding-bottom: 5%;
+}
+.food{
+  border:1px solid;
+  padding-bottom:10%;
+  margin: auto;
+
+
+}
+.meatloaf{
+  border:1px solid;
+  padding-bottom:10%;
+  margin: auto;
+  color:green;
+
+}
+
+

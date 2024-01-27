@@ -1,13 +1,13 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import Calender from './components/pages/calendar/calendar_component.jsx'
+import Header from './components/headerlinks.jsx'
 
-/*
-This code renders our project so it can be viewed in a browser. 
-*/
-ReactDOM.createRoot(document.getElementById("root")).render(
+
+/* Header doesnt make sense */
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+    <Header />
+    <Calender />
+  </React.StrictMode>,
+)
