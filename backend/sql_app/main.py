@@ -1,40 +1,21 @@
-"""
-app.py
-
-This one file is all you need to start off with your FastAPI server!
-"""
-
-from typing_extensions import Annotated
-import time
-
-import uvicorn
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import session
-from sql_app import crud, models, schemas
-from sql_app.database import SessionLocal, engine
 
-
-app = FastAPI()
+from . import crud, models, schemas
+from .database import SessionLocal, engine
+import uvicorn
 
 models.Base.metadata.create_all(bind=engine)
 
-# Database dependency
+app = FastAPI()
+
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-
-@app.get("/")
-async def main():
-    return {"Hello": "world!"}
-
-
-@app.get("/home")
-def home():
-    return {"message": "This is the home page"}
 
 
 @app.post("/locations/", response_model=schemas.Location)
