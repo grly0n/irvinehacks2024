@@ -2,6 +2,10 @@ from bs4 import BeautifulSoup
 # import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
+import time
 
 BASE_URL = 'https://uci.campusdish.com/LocationsAndMenus/'
 
@@ -11,47 +15,27 @@ def scrape_dining_data(eatery_id):
 
     browser = webdriver.Firefox()  # uhg ok .. if this doesnt work we can try Chrome
     browser.get(BASE_URL + eatery_id)
-    browser.implicitly_wait(0.5)
 
+    close_popups(browser)
     scrape_current_source(browser)
-    switch_source(browser, 1)
 
 
-def switch_source(browser, displacement):
-    browser.implicitly_wait(5)
-    print("Trying to find button...")
-    # button = browser.find_element(By.CLASS_NAME, "sc-ikkxIA dVtlOt")
-    # button = browser.find_element(By.XPATH, '//button')
-    # button = browser.find_element(By.CLASS_NAME, 'sc-empnci kPQgyu DateMealFilterButton')
-
-    # all buttons approach
-    buttons = browser.find_elements(By.TAG_NAME, 'button')
-
-    if buttons is None:
-        print("no buttons")
-    else:
-        print(len(buttons), "found")
-        xbutton = None
-        datebutton = None
-        for button in buttons:
-            # print("class = \"" + button.get_attribute('class') + "\"")
-            if button.get_attribute('class') == "sc-empnci kPQgyu DateMealFilterButton":
-                datebutton = button
-                print(True)
-            elif button.get_attribute('class') == "sc-ikkxIA dVtlOt":
-                xbutton = button
-                print(True)
-            # print()
-            # print("\"" + button.text + "\"")
-        xbutton.click()
-        # datebutton.click()
+# switch page to the next day...
+def switch_contexts(browser, to):
+    pass
 
 
-
-
-
-    # button.click()
-
+# this function does some inital setup once it hits the first page, like clearing
+# the cookies preferences and the popup that opens.
+# this should only needs to be done once per session.
+def close_popups(browser):
+    errors = [NoSuchElementException]
+    # close out of the popup
+    (WebDriverWait(browser, timeout=10, poll_frequency=0.2, ignored_exceptions=errors)
+     .until(EC.presence_of_element_located((By.CLASS_NAME, "sc-ikkxIA"))).click())
+    # close out of the cookies popup
+    (WebDriverWait(browser, timeout=10, poll_frequency=1, ignored_exceptions=errors)
+     .until(EC.presence_of_element_located((By.CLASS_NAME, "banner-close-button"))).click())
 
 
 def scrape_current_source(browser):
@@ -66,10 +50,9 @@ def scrape_current_source(browser):
             print(res.text.strip())
 
 
-
 def main():
     scrape_dining_data("BrandyWine")
-    pass # for testing purposes only
+    pass  # for testing purposes only
 
 
 if __name__ == "__main__":
