@@ -32,7 +32,7 @@ def close_popups(browser):
     errors = [NoSuchElementException]
     # close out of the popup
     (WebDriverWait(browser, timeout=10, poll_frequency=0.2, ignored_exceptions=errors)
-     .until(EC.presence_of_element_located((By.CLASS_NAME, "sc-ikkxIA"))).click())
+     .until(EC.presence_of_element_located((By.CLASS_NAME, "sc-ikkxIA"))).click())  # can only search by 1 classname @ a time.. good to know
     # close out of the cookies popup
     (WebDriverWait(browser, timeout=10, poll_frequency=1, ignored_exceptions=errors)
      .until(EC.presence_of_element_located((By.CLASS_NAME, "banner-close-button"))).click())
@@ -41,13 +41,18 @@ def close_popups(browser):
 def scrape_current_source(browser):
     source = browser.page_source
     soup = BeautifulSoup(source, "html.parser")
-    result = soup.find_all("h3", {"class": "sc-fXSgeo htxwrt HeaderItemName"})
 
-    if result is None:
-        print("empty")
-    else:
-        for res in result:
-            print(res.text.strip())
+    parentcategories = soup.find_all("div", {"class": "sc-dkmUuB jOJEgu MenuParentCategory"})
+    if parentcategories is None:
+        print("no parents LOL")
+
+    for parent in parentcategories:
+        name = parent.find("h2", {"class": "sc-bDumWk gBTLmS CategoryName"})
+        print(name.text.strip())
+        contents = parent.find_all("h3", {"class": "sc-fXSgeo htxwrt HeaderItemName"})
+        for item in contents:
+            print(item.text.strip())
+        print("\n")
 
 
 def main():
