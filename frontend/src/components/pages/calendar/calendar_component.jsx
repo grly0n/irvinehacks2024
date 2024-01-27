@@ -1,5 +1,5 @@
 
-import "./App.css"
+import "./calendar_component.css"
 
 /* pipe in the data here*/
 const data=["meatloaf","taco", "breadstick", "meatloaf","meatloaf","meatloaf","meatloaf"]
