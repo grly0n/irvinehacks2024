@@ -5,7 +5,20 @@
   text-align: center;
 }
 
-.calends{
-
-  
+.Calend{
+  width: 100%;
+  border: 1px solid;
 }
+.days{
+  border: 1px solid;
+  padding-bottom: 5%;
+}
+.food{
+  border:1px solid;
+  padding-bottom:50%;
+  margin: auto;
+
+
+}
+
+
