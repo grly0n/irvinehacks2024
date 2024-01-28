@@ -30,8 +30,11 @@ def manage_database(load: bool):
 
     # Load databases manually (only for the first time)
     if load:
-        get_database("TheAnteatery", p / "anteatery_database.txt")
-        brandywine_start_time = get_database("BrandyWine", p / "brandywine_database.txt")
+        try:
+            get_database("TheAnteatery", p / "anteatery_database.json")
+            brandywine_start_time = get_database("BrandyWine", p / "brandywine_database.json")
+        except:
+            manage_database(load)
 
 
     # Main loop updating information every 7 days
@@ -39,13 +42,13 @@ def manage_database(load: bool):
         print("Checking whether to update")
         if time.time() - brandywine_start_time >= 604800:
             print("Updating...")
-            get_database("TheAnteatery", p / "anteatery_database.txt")
-            brandywine_start_time = get_database("BrandyWine", p / "brandywine_database.txt")
+            get_database("TheAnteatery", p / "anteatery_database.json")
+            brandywine_start_time = get_database("BrandyWine", p / "brandywine_database.json")
             print("Database updated")
         else: 
             print("Not updating")
             time.sleep(604800)
 
 if __name__ == "__main__":
-    manage_database(False)
+    manage_database(True)
 
