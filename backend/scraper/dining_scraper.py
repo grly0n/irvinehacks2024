@@ -33,6 +33,11 @@ ANTEATERY = "TheAnteatery"
 DAYS_TO_PULL = 14
 
 
+# ScrapeError
+class ScrapeError(Exception):
+    pass
+
+
 # returns the result of the webscraping as a tuple...
 # first element is the constructed database
 # second element is the time that the scrape started at
@@ -56,36 +61,43 @@ def get_info(eatery_id):
 
 def scrape_dining_data(eatery_id):
     database = {}
-    browser = webdriver.Firefox()  # uhg ok .. if this doesnt work we can try Chrome
-    browser.get(BASE_URL + eatery_id)
-    browser.implicitly_wait(10)
+    browser = None
+    try:
+        browser = webdriver.Firefox()  # uhg ok .. if this doesnt work we can try Chrome
+        browser.get(BASE_URL + eatery_id)
+        browser.implicitly_wait(10)
 
-    close_popups(browser)
-    open_change_menu(browser)
-    open_meal_menu(browser)
-    switch_to_brunch(browser)
-    press_done(browser)
-    print(f"working on {eatery_id}...")
-    current_date = (1, 28)
-    for days_ahead in range(0, DAYS_TO_PULL):  # does 14 days, starting on ideally a sunday
-        meal_map = {}
-        if days_ahead > 0:
-            switch_page(to=current_date, browser=browser)
-
-        meal_map["Lunch"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)  # this could be a helper vv
+        close_popups(browser)
         open_change_menu(browser)
         open_meal_menu(browser)
-        switch_to_dinner(browser)
+        switch_to_brunch(browser)
         press_done(browser)
-        meal_map["Dinner"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)
+        print(f"working on {eatery_id}...")
+        current_date = (1, 28)
+        for days_ahead in range(0, DAYS_TO_PULL):  # does 14 days, starting on ideally a sunday
+            meal_map = {}
+            if days_ahead > 0:
+                switch_page(to=current_date, browser=browser)
 
-        date_as_str = date_to_string(current_date)
-        print(date_as_str, end=" ")
-        if date_as_str not in database.keys():
-            database[date_as_str] = {}
-        database[date_as_str] = meal_map
-        current_date = next_date(current_date)
-    print()
+            meal_map["Lunch"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)  # this could be a helper vv
+            open_change_menu(browser)
+            open_meal_menu(browser)
+            switch_to_dinner(browser)
+            press_done(browser)
+            meal_map["Dinner"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)
+
+            date_as_str = date_to_string(current_date)
+            print(date_as_str, end=" ")
+            if date_as_str not in database.keys():
+                database[date_as_str] = {}
+            database[date_as_str] = meal_map
+            current_date = next_date(current_date)
+        print()
+    except Exception as e:
+        print(e)
+        if browser is not None:
+            browser.quit()
+        raise ScrapeError("Something went wrong, please try again.")
     return database
 
 
