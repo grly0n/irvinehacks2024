@@ -7,7 +7,8 @@ export default function Home() {
         <>
             
             <Header />
-            <p>Welcome to Foodge!</p>
+            <h1>Welcome to the BrandyEatery!</h1>
+            <p> We take the data from the UCI dining halls (Brandywine and the Anteatery) and plan them nicely on a calander.</p>
         </>
     );
 

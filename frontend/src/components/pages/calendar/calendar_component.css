@@ -8,6 +8,7 @@
 .Calend{
   width: 100%;
   border: 1px solid;
+  background-color: lightblue;
 }
 .days{
   border: 1px solid;
@@ -24,7 +25,8 @@
   border:1px solid;
   padding-bottom:10%;
   margin: auto;
-  color:green;
+  color:orange;
+  
 
 }
 

@@ -3,7 +3,7 @@ import './header.css'
 export default function Header(){
     return (
         <>
-            <table>
+            <table className='bar'>
                 <tr>
                     <th className='header'>
                         <Link to={'/'}> Home!</Link>
