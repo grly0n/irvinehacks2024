@@ -47,7 +47,7 @@ def get_info(eatery_id):
         start_time = time.time()
         scrape_result = scrape_dining_data(ANTEATERY)
         delta = time.time() - start_time
-        print(f"scraped brandy in {delta} seconds.")
+        print(f"scraped anteatery in {delta} seconds.")
         return scrape_result, start_time
     else:
         print(eatery_id, "invalid.")
@@ -68,7 +68,6 @@ def scrape_dining_data(eatery_id):
     print(f"working on {eatery_id}...")
     current_date = (1, 28)
     for days_ahead in range(0, DAYS_TO_PULL):  # does 14 days, starting on ideally a sunday
-        print(current_date, end=", ")
         meal_map = {}
         if days_ahead > 0:
             switch_page(to=current_date, browser=browser)
@@ -79,11 +78,13 @@ def scrape_dining_data(eatery_id):
         switch_to_dinner(browser)
         press_done(browser)
         meal_map["Dinner"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)
-        current_date = next_date(current_date)
 
-        if current_date not in database.keys():
+        date_as_str = date_to_string(current_date)
+        print(date_as_str, end=" ")
+        if date_as_str not in database.keys():
             database[current_date] = {}
-        database[current_date] = meal_map
+        database[date_as_str] = meal_map
+        current_date = next_date(current_date)
     print()
     return database
 
@@ -104,6 +105,11 @@ def next_date(current_date):
             tomorrow_month += 1
             tomorrow_day = 1
     return tomorrow_month, tomorrow_day
+
+
+# returns the date tuple as a string
+def date_to_string(today):
+    return str(today[0]) + '-' + str(today[1])
 
 
 # switch page to the next day...
