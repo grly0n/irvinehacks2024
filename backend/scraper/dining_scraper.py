@@ -30,7 +30,7 @@ DATE_STR_TO_INT = {
 
 BRANDY = "BrandyWine"
 ANTEATERY = "TheAnteatery"
-DAYS_TO_PULL = 7
+DAYS_TO_PULL = 14
 
 
 # returns the result of the webscraping as a tuple...
@@ -302,6 +302,7 @@ def scrape_anteatery_source(browser):
 # for testing purposes only
 def main():
     print(get_info(BRANDY))
+    print(get_info(ANTEATERY))
 
 
 if __name__ == "__main__":
