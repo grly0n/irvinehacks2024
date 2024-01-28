@@ -1,0 +1,17 @@
+#root{
+    background-image:url(../../assets/meetloaf.png);
+    width: auto;
+    
+}
+.show_full_page_home{
+    padding-bottom: 44%;
+    margin-left: 0%;
+}
+.show_full_page_countdown{
+    padding-bottom: 41%;
+
+}
+.show_full_page_calendar{
+    padding-bottom:35.5%
+
+}
