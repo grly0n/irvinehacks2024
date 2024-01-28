@@ -1,7 +1,7 @@
 import './page.css'
 import Calendar from "./calendar/calendar_component.jsx";
 import Header from "../header.jsx";
-import brandywine_database from "brandywine_database.json"
+import brandywine_database from "./brandywine_database.json"
 export default function Brandywine_calendar_page(){
     return (
         <>
