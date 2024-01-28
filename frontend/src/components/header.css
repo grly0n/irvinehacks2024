@@ -5,7 +5,15 @@
     text-align: center;
   }
 .header{
-    border: 1px solid
+    text-align: center;
+    margin-left: auto;
+    padding-left: 100px;
+    padding-right: 100px;
 
-
+}
+.bar{
+    border: 1px solid;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: blanchedalmond;
 }
