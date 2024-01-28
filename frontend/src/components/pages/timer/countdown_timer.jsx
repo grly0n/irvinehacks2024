@@ -1,6 +1,5 @@
 import "./countdown_timer.css"
 import { useEffect, useState } from "react";
-import date from '../../../../../backend/database/meatloaf_day.txt'
 const Timer = () => {
     const [miliseconds,setMiliseconds] = useState(0);
     const [seconds,setSeconds] = useState(0);
