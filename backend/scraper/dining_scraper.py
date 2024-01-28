@@ -1,10 +1,7 @@
 from bs4 import BeautifulSoup
-# import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common import action_chains as AC
 import time
 
@@ -33,11 +30,35 @@ DATE_STR_TO_INT = {
 
 BRANDY = "BrandyWine"
 ANTEATERY = "TheAnteatery"
+DAYS_TO_PULL = 7
 
 
-def scrape_dining_data(eatery_id, database):
+# returns the result of the webscraping as a tuple...
+# first element is the constructed database
+# second element is the time that the scrape started at
+def get_info(eatery_id):
+    if eatery_id == BRANDY:
+        start_time = time.time()
+        scrape_result = scrape_dining_data(BRANDY)
+        delta = time.time() - start_time
+        print(f"scraped brandy in {delta} seconds.")
+        return scrape_result, start_time
+    elif eatery_id == ANTEATERY:
+        start_time = time.time()
+        scrape_result = scrape_dining_data(ANTEATERY)
+        delta = time.time() - start_time
+        print(f"scraped brandy in {delta} seconds.")
+        return scrape_result, start_time
+    else:
+        print(eatery_id, "invalid.")
+        exit(1)
+
+
+def scrape_dining_data(eatery_id):
+    database = {}
     browser = webdriver.Firefox()  # uhg ok .. if this doesnt work we can try Chrome
     browser.get(BASE_URL + eatery_id)
+    browser.implicitly_wait(10)
 
     close_popups(browser)
     open_change_menu(browser)
@@ -46,7 +67,7 @@ def scrape_dining_data(eatery_id, database):
     press_done(browser)
     print(f"working on {eatery_id}...")
     current_date = (1, 28)
-    for days_ahead in range(0, 15):  # does 14 days, starting on ideally a sunday
+    for days_ahead in range(0, DAYS_TO_PULL):  # does 14 days, starting on ideally a sunday
         print(current_date, end=", ")
         meal_map = {}
         if days_ahead > 0:
@@ -62,7 +83,7 @@ def scrape_dining_data(eatery_id, database):
 
         if current_date not in database.keys():
             database[current_date] = {}
-        database[current_date][eatery_id] = meal_map
+        database[current_date] = meal_map
     print()
     return database
 
@@ -107,8 +128,9 @@ def switch_meal(to, browser):
 
 
 def open_meal_menu(browser):
-    meal = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-            .until(EC.presence_of_element_located((By.CLASS_NAME, "select-wrapper-main"))))
+    # meal = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
+    #         .until(EC.presence_of_element_located((By.CLASS_NAME, "select-wrapper-main"))))
+    meal = browser.find_element(By.CLASS_NAME, "select-wrapper-main")
     action = AC.ActionChains(browser)
     action.move_to_element_with_offset(meal, 5, 5)
     action.click()
@@ -120,52 +142,44 @@ def open_meal_menu(browser):
 
 
 def switch_to_brunch(browser):
-    brunch = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-              .until(EC.presence_of_element_located((By.CSS_SELECTOR, ".css-1nmdiq5-menu"))))
+    brunch = browser.find_element(By.CSS_SELECTOR, ".css-1nmdiq5-menu")
     action = AC.ActionChains(browser)
     action.move_to_element_with_offset(brunch, 0, 0)
     action.click()
     action.perform()
-    time.sleep(1)
+    # time.sleep(1)
 
 
 def switch_to_dinner(browser):
-    dinner = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-              .until(EC.presence_of_element_located((By.CSS_SELECTOR, ".css-1nmdiq5-menu"))))
+    dinner = browser.find_element(By.CSS_SELECTOR, ".css-1nmdiq5-menu")
     action = AC.ActionChains(browser)
     action.move_to_element_with_offset(dinner, 5, 35)
     action.click()
     action.perform()
-    time.sleep(1)
 
 
 # document me
 def open_change_menu(browser):
-    change = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-              .until(EC.presence_of_element_located((By.CLASS_NAME, "DateMealFilterButton"))))
+    change = browser.find_element(By.CLASS_NAME, "DateMealFilterButton")
     click_elem(change, browser)
 
 
 # document me
 def open_date_picker(browser):
-    datepicker = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-                  .until(EC.presence_of_element_located((By.CLASS_NAME, "DatePickerButton"))))
+    datepicker = browser.find_element(By.CLASS_NAME, "DatePickerButton")
     click_elem(datepicker, browser)
 
 
 # requires datepicker to be open. TODO: make this work with years...
 def get_current_month(browser):
-    date_strs = ((WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-                 .until(EC.presence_of_element_located((By.CLASS_NAME, "react-datepicker__current-month"))))
-                 .text.strip().split(" "))
-    time.sleep(SHORT_SLEEP)
+    date_strs = browser.find_element(By.CLASS_NAME, "react-datepicker__current-month").text.strip().split(" ")
     return DATE_STR_TO_INT[date_strs[0]]
 
 
 def press_done(browser):
-    done_button = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-                   .until(EC.presence_of_element_located((By.CLASS_NAME, "Done"))))
+    done_button = browser.find_element(By.CLASS_NAME, "Done")
     click_elem(done_button, browser)
+    time.sleep(SHORT_SLEEP)
 
 
 def change_date(to, browser, attempt2=False):
@@ -183,9 +197,6 @@ def change_date(to, browser, attempt2=False):
 
     # should be on the right month now...
 
-    (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-     .until(EC.presence_of_element_located((By.CLASS_NAME, "ejvkOn"))))
-
     dates = browser.find_elements(By.CLASS_NAME, "ejvkOn")
     target = None  # not target int, target date obj
     for date in dates:
@@ -200,36 +211,30 @@ def change_date(to, browser, attempt2=False):
     else:
         click_elem(target, browser)
 
-    # time.sleep(SHORT_SLEEP)  # short sleep to accommodate load time
+    time.sleep(SHORT_SLEEP)  # short sleep to accommodate load time
 
     return True  # signifies that we found the date & clicked it
 
 
 def next_month(browser):
-    next_month_button =(WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-                        .until(EC.presence_of_element_located((By.CLASS_NAME, "react-datepicker__navigation--next"))))
+    next_month_button = browser.find_element(By.CLASS_NAME, "react-datepicker__navigation--next")
     click_elem(next_month_button, browser)
-    time.sleep(SHORT_SLEEP)
 
 
 # clicks an element. more reliable than element.click()
 def click_elem(which, browser):
     browser.execute_script("arguments[0].click();", which)
-    time.sleep(SHORT_SLEEP)
 
 
 # this function does some initial setup once it hits the first page, like clearing
 # the cookies preferences and the popup that opens.
 # this should only needs to be done once per session.
 def close_popups(browser):
-    # close out of the popup
-    popup_button = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-                    .until(EC.presence_of_element_located((By.CLASS_NAME, "sc-ikkxIA"))))  # can only search by 1 classname @ a time.. good to know
+    popup_button = browser.find_element(By.CLASS_NAME, "sc-ikkxIA")
     click_elem(popup_button, browser)
 
     # close out of the cookies popup
-    cookies_button = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
-                      .until(EC.presence_of_element_located((By.CLASS_NAME, "banner-close-button"))))
+    cookies_button = browser.find_element(By.CLASS_NAME, "banner-close-button")
     click_elem(cookies_button, browser)
 
     time.sleep(COOKIES_SLEEP) # big sleep here because there's some sort of JS reload after cookies menu is closed...
@@ -296,15 +301,7 @@ def scrape_anteatery_source(browser):
 
 # for testing purposes only
 def main():
-    start_time = time.time()
-    brandy_base = scrape_dining_data(BRANDY, {})
-    print(f"scraped brandy in {time.time() - start_time} seconds.")
-    start_time = time.time()
-    ant_base    = scrape_dining_data(ANTEATERY, {})
-    print(f"scraped anteatery in {time.time() - start_time} seconds.")
-
-    print(brandy_base)
-    print(ant_base)
+    print(get_info(BRANDY))
 
 
 if __name__ == "__main__":
