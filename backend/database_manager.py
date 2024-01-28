@@ -26,7 +26,8 @@ def get_database(eatery_id: str, file_name: str):
 def manage_database(load: bool):
     '''Automatically updates databases every 7 days. Pass load as True to load manually.'''
     brandywine_start_time = time.time()
-    p = Path().absolute() / 'backend/database'
+    p = Path().absolute() / 'frontend/src/components/pages'
+    print(p.exists())
 
     # Load databases manually (only for the first time)
     if load:
@@ -50,5 +51,5 @@ def manage_database(load: bool):
             time.sleep(604800)
 
 if __name__ == "__main__":
-    manage_database(True)
+    manage_database(False)
 
