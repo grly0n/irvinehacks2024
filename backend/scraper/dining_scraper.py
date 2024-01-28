@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common import action_chains as AC
 import time
 
 
@@ -13,7 +14,7 @@ BASE_URL = 'https://uci.campusdish.com/LocationsAndMenus/'
 MAX_TIMEOUT = 10
 POLL_FREQ = 0.2
 COOKIES_SLEEP = 5
-SHORT_SLEEP = 3
+SHORT_SLEEP = 2.5
 ERRORS = [NoSuchElementException]
 DATE_STR_TO_INT = {
     "January"   : 1,
@@ -30,23 +31,40 @@ DATE_STR_TO_INT = {
     "December"  : 12,
 }
 
+BRANDY = "BrandyWine"
+ANTEATERY = "TheAnteatery"
 
-def scrape_dining_data(eatery_id):
+
+def scrape_dining_data(eatery_id, database):
     browser = webdriver.Firefox()  # uhg ok .. if this doesnt work we can try Chrome
     browser.get(BASE_URL + eatery_id)
 
-    # main program
     close_popups(browser)
-    menus = []
-    # scrape_current_source(browser)
+    open_change_menu(browser)
+    open_meal_menu(browser)
+    switch_to_brunch(browser)
+    press_done(browser)
 
     current_date = (1, 27)
-    for i in range(0, 25):  # does 25 days in advance as of rn...
+    for days_ahead in range(0, 15):  # does 25 days in advance as of rn...
         print("scraping", current_date)
-        if i > 0:
+        meal_map = {}
+        if days_ahead > 0:
             switch_page(to=current_date, browser=browser)
-        menus.append(scrape_current_source(browser))
+        meal_map["Lunch"] = scrape_current_source(browser)  # this could be a helper vv
+        open_change_menu(browser)
+        open_meal_menu(browser)
+        switch_to_dinner(browser)
+        press_done(browser)
+        meal_map["Dinner"] = scrape_current_source(browser)
         current_date = next_date(current_date)
+
+        if current_date not in database.keys():
+            database[current_date] = {}
+        database[current_date][eatery_id] = meal_map
+        print(database)
+
+    return database
 
 
 def next_date(current_date):
@@ -78,7 +96,49 @@ def switch_page(to, browser):
     if not success:
         print("Date", to, "was not found.")
 
+    open_meal_menu(browser)
+    switch_to_brunch(browser)
+
     press_done(browser)
+
+
+def switch_meal(to, browser):
+    open_change_menu(browser)
+
+
+def open_meal_menu(browser):
+    meal = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
+            .until(EC.presence_of_element_located((By.CLASS_NAME, "select-wrapper-main"))))
+    action = AC.ActionChains(browser)
+    action.move_to_element_with_offset(meal, 5, 5)
+    action.click()
+    action.perform()
+    time.sleep(1)
+
+    # print(meal.location)
+    # click_elem(meal, browser)
+
+
+def switch_to_brunch(browser):
+    brunch = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
+              .until(EC.presence_of_element_located((By.CSS_SELECTOR, ".css-1nmdiq5-menu"))))
+    print("Switching to brunch...")
+    action = AC.ActionChains(browser)
+    action.move_to_element_with_offset(brunch, 0, 0)
+    action.click()
+    action.perform()
+    time.sleep(1)
+
+
+def switch_to_dinner(browser):
+    dinner = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
+              .until(EC.presence_of_element_located((By.CSS_SELECTOR, ".css-1nmdiq5-menu"))))
+    print("Switching to dinner...")
+    action = AC.ActionChains(browser)
+    action.move_to_element_with_offset(dinner, 5, 35)
+    action.click()
+    action.perform()
+    time.sleep(1)
 
 
 # document me
@@ -100,6 +160,7 @@ def get_current_month(browser):
     date_strs = ((WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
                  .until(EC.presence_of_element_located((By.CLASS_NAME, "react-datepicker__current-month"))))
                  .text.strip().split(" "))
+    time.sleep(SHORT_SLEEP)
     return DATE_STR_TO_INT[date_strs[0]]
 
 
@@ -114,15 +175,16 @@ def change_date(to, browser, attempt2=False):
     while get_current_month(browser) < to[0]:
         if attempts >= 3:
             return False  # date could not be found...
-        get_current_month(browser)  # datepicker is open...
-        if to[0] < to[1]:
+        current = get_current_month(browser)  # datepicker is open...
+        print("current month: " + str(get_current_month(browser)))
+        if current < to[0]:  # if current month is < our intended current month...
             next_month(browser)
         attempts += 1
 
     if get_current_month(browser) != to[0]:
         return False  # could not be found...
 
-    # should be on the right mont now...
+    # should be on the right month now...
 
     (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
      .until(EC.presence_of_element_located((By.CLASS_NAME, "ejvkOn"))))
@@ -141,7 +203,7 @@ def change_date(to, browser, attempt2=False):
     else:
         click_elem(target, browser)
 
-    time.sleep(SHORT_SLEEP)  # short sleep to accommodate load time
+    # time.sleep(SHORT_SLEEP)  # short sleep to accommodate load time
 
     return True  # signifies that we found the date & clicked it
 
@@ -149,6 +211,7 @@ def change_date(to, browser, attempt2=False):
 def next_month(browser):
     next_month_button =(WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
                         .until(EC.presence_of_element_located((By.CLASS_NAME, "react-datepicker__navigation--next"))))
+    print("next month button @", next_month_button.location)
     click_elem(next_month_button, browser)
     time.sleep(SHORT_SLEEP)
 
@@ -156,6 +219,7 @@ def next_month(browser):
 # clicks an element. more reliable than element.click()
 def click_elem(which, browser):
     browser.execute_script("arguments[0].click();", which)
+    time.sleep(SHORT_SLEEP)
 
 
 # this function does some initial setup once it hits the first page, like clearing
@@ -175,29 +239,45 @@ def close_popups(browser):
     time.sleep(COOKIES_SLEEP) # big sleep here because there's some sort of JS reload after cookies menu is closed...
 
 
+# this is just for brandy... TODO: update this function's name...
 def scrape_current_source(browser):
     source = browser.page_source
     soup = BeautifulSoup(source, "html.parser")
+    stations_dict = dict()
     print("Scraping...")
 
-    parent_categories = soup.find_all("div", {"class": "sc-dkmUuB jOJEgu MenuParentCategory"})
-    if parent_categories is None:
-        print("no parents LOL")
+    stations = soup.find_all("div", {"class": "MenuStation"})
 
-    for parent in parent_categories:
-        name = parent.find("h2", {"class": "sc-bDumWk gBTLmS CategoryName"})
-        print(name.text.strip())
-        contents = parent.find_all("h3", {"class": "sc-fXSgeo htxwrt HeaderItemName"})
-        for item in contents:
-            print(item.text.strip())
-        print("\n")
+    if stations is None:
+        print("no stations found")
 
-    return None
+    else:
+        for station in stations:
+            name = station.find("h2", {"class": "StationHeaderTitle"}).text.strip()
+            if name not in ["Grubb/ Mainline", "Hearth/Pizza", "Soups", "Crossroads"]:
+                continue
+            else:  # scrape info from this station
+                stations_dict[name] = []
+                parent_categories = station.find_all("div", {"class": "sc-dkmUuB jOJEgu MenuParentCategory"})
+                if parent_categories is None:
+                    print("no parents LOL")
+                for parent in parent_categories:
+                    # parentname = parent.find("h2", {"class": "sc-bDumWk gBTLmS CategoryName"}).text.strip()
+                    contents = parent.find_all("h3", {"class": "sc-fXSgeo htxwrt HeaderItemName"})
+                    for item in contents:
+                        stations_dict[name].append(item.text.strip())  # TODO: figure out the single-quote conundrum...
+        # print(stations_dict)
+
+    return stations_dict
 
 
 # for testing purposes only
 def main():
-    scrape_dining_data("BrandyWine")
+    # brandy_base = scrape_dining_data(BRANDY, {})
+    ant_base    = scrape_dining_data(ANTEATERY, {})
+
+    # print(brandy_base)
+    print(ant_base)
 
 
 if __name__ == "__main__":
