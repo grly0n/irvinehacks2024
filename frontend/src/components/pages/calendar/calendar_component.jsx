@@ -11,55 +11,101 @@ function Calendar({data}) {
   const current_day=date.getDate();
   const current_year=date.getFullYear();
   let food={};
-  let dates= Object.keys(data)
+  let dates= Object.keys(data);
   
-  {for (let i =0;i<data.length;i++)
-  {
-    if (current_month==8 | current_month==3 | current_month==5|current_month==10){
-      if (current_day+i>30) {
-        food[(current_month+2)+'/'+((current_day+i)%30) +'/'+current_year]= data[i];
-      }
-      else{
-        food[(current_month+1)+'/'+(current_day+i) +'/'+current_year]= data[i];
-      }
-    }
-    else if (current_month==1){
-      if (current_day+i>28) {
-        food[(current_month+2)+'/'+((current_day+i)%28) +'/'+current_year]= data[i];
-      }
-      else{
-        food[(current_month+1)+'/'+(current_day+i) +'/'+current_year]= data[i];
-      }
-    }
-    else{
-      if (current_day+i>31) {
-        food[(current_month+2)+'/'+((current_day+i)%31) +'/'+current_year]= data[i];
-      }
-      else{
-        food[(current_month+1)+'/'+(current_day+i) +'/'+current_year]= data[i];
-      }
-
-    }
-  }}
-  
-  let keys= Object.keys(food);
 
 
   const createTable =()=>{
     let table = []
-    for ( let i =0; i<2;i++)
-    {
+    
       let children = []
-      for (let j=0;j<keys.length;j++)
+      for (let j=0;j<7;j++)
       {
-        children.push(<td>{keys[j]+'-'+food[keys[j]]}</td>)
+        let input=[];
+        
+        let todays_food=data[dates[j]]
+        
+        let lunch= todays_food['Lunch'];
+        input.push(dates[j]);
+        input.push(<h2>Lunch</h2>);
+        console.log(input);
 
+        let lunch_areas=Object.keys(lunch);
+        for (const areas of lunch_areas)
+        {
+          let string_list=areas;
+
+          for (const foods of lunch[areas] ){
+            string_list= string_list+ '\n'+foods;
+          }
+          input.push(<pre>{string_list}</pre>);
+        }
+        
+        
+        
+        let dinner= todays_food['Dinner'];
+
+        input.push(<h2>Dinner</h2>);
+        console.log(input);
+
+        let dinner_areas=Object.keys(dinner);
+        for (const areas of dinner_areas)
+        {
+          let string_list=areas;
+
+          for (const foods of dinner[areas] ){
+            string_list= string_list+ '\n'+foods;
+          }
+          input.push(<pre>{string_list}</pre>);
+        }
+        children.push(<th className="food">{input}</th>);
+        
+
+      }
+      table.push(<tr>{children}</tr>)
+      
+      children = []
+      for (let j=7;j<14;j++)
+      {
+        let input=[];
+        let todays_food=data[dates[j]]
+        let lunch= todays_food['Lunch'];
+        input.push(dates[j]);
+        input.push(<h2>Lunch</h2>);
+        
+
+        let lunch_areas=Object.keys(lunch);
+        for (const areas of lunch_areas)
+        {
+          let string_list=areas;
+
+          for (const foods of lunch[areas] ){
+            string_list= string_list+ '\n'+foods;
+          }
+          input.push(<pre>{string_list}</pre>);
+        }
+        let dinner= todays_food['Dinner'];
+        input.push(<h2>Dinner</h2>);
+
+        let dinner_areas=Object.keys(dinner);
+        for (const areas of dinner_areas)
+        {
+          let string_list=areas;
+
+          for (const foods of dinner[areas] ){
+            string_list= string_list+ '\n'+foods;
+          }
+          input.push(<pre>{string_list}</pre>);
+        }
+
+        children.push(<th className="food">{input}</th>);
+        
 
       }
       table.push(<tr>{children}</tr>)
 
 
-    }
+    
     return table
   } 
 
