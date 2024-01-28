@@ -82,7 +82,7 @@ def scrape_dining_data(eatery_id):
         date_as_str = date_to_string(current_date)
         print(date_as_str, end=" ")
         if date_as_str not in database.keys():
-            database[current_date] = {}
+            database[date_as_str] = {}
         database[date_as_str] = meal_map
         current_date = next_date(current_date)
     print()
