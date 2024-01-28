@@ -1,7 +1,7 @@
 import './page.css'
 import Calendar from "./calendar/calendar_component.jsx";
 import Header from "../header.jsx";
-import anteatery_database from "../../../../backend/database/anteatery_database.json"
+import anteatery_database from "anteatery_database.json"
 export default function Anteatery_calendar_page(){
     return (
         <>
