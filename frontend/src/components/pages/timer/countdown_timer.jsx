@@ -1,5 +1,6 @@
 import "./countdown_timer.css"
 import { useEffect, useState } from "react";
+import date from '../../../../../backend/database/meatloaf_day.txt'
 const Timer = () => {
     const [miliseconds,setMiliseconds] = useState(0);
     const [seconds,setSeconds] = useState(0);
@@ -7,9 +8,21 @@ const Timer = () => {
     const [hours, setHours] = useState(0);
     const [days,setDays] = useState(0);
 
-
-    let deadline = "December 31, 2024";
-
+    let deadline='12/31/24'
+    /* Did not implement, find text
+    fetch(date)
+        .then(d => d.text())
+        .then(text => { 
+        if (text != 'False'){
+            deadline = text;
+        }
+        else{
+            let todays_date= new Date();
+            deadline = todays_date.getMonth()+'/'+todays_date.getDate()+ '/'+todays_date.getFullYear();
+        }
+        });
+    console.log({deadline})
+    */
     const time_diff=()=>{
         
         const time= Date.parse(deadline)- Date.now();
@@ -74,7 +87,7 @@ const Timer = () => {
 
             </table>
             
-        
+            <p>{days==0&&hours==0&&minutes==0&&seconds==0&&miliseconds==0? 'This sucks, no Meatloaf':'' }</p>
         </>
 
     );
