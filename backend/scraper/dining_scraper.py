@@ -14,7 +14,7 @@ BASE_URL = 'https://uci.campusdish.com/LocationsAndMenus/'
 MAX_TIMEOUT = 10
 POLL_FREQ = 0.2
 COOKIES_SLEEP = 5
-SHORT_SLEEP = 2.5
+SHORT_SLEEP = 3
 ERRORS = [NoSuchElementException]
 DATE_STR_TO_INT = {
     "January"   : 1,
@@ -44,26 +44,26 @@ def scrape_dining_data(eatery_id, database):
     open_meal_menu(browser)
     switch_to_brunch(browser)
     press_done(browser)
-
-    current_date = (1, 27)
-    for days_ahead in range(0, 15):  # does 25 days in advance as of rn...
-        print("scraping", current_date)
+    print(f"working on {eatery_id}...")
+    current_date = (1, 28)
+    for days_ahead in range(0, 15):  # does 14 days, starting on ideally a sunday
+        print(current_date, end=", ")
         meal_map = {}
         if days_ahead > 0:
             switch_page(to=current_date, browser=browser)
-        meal_map["Lunch"] = scrape_current_source(browser)  # this could be a helper vv
+
+        meal_map["Lunch"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)  # this could be a helper vv
         open_change_menu(browser)
         open_meal_menu(browser)
         switch_to_dinner(browser)
         press_done(browser)
-        meal_map["Dinner"] = scrape_current_source(browser)
+        meal_map["Dinner"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)
         current_date = next_date(current_date)
 
         if current_date not in database.keys():
             database[current_date] = {}
         database[current_date][eatery_id] = meal_map
-        print(database)
-
+    print()
     return database
 
 
@@ -122,7 +122,6 @@ def open_meal_menu(browser):
 def switch_to_brunch(browser):
     brunch = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
               .until(EC.presence_of_element_located((By.CSS_SELECTOR, ".css-1nmdiq5-menu"))))
-    print("Switching to brunch...")
     action = AC.ActionChains(browser)
     action.move_to_element_with_offset(brunch, 0, 0)
     action.click()
@@ -133,7 +132,6 @@ def switch_to_brunch(browser):
 def switch_to_dinner(browser):
     dinner = (WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
               .until(EC.presence_of_element_located((By.CSS_SELECTOR, ".css-1nmdiq5-menu"))))
-    print("Switching to dinner...")
     action = AC.ActionChains(browser)
     action.move_to_element_with_offset(dinner, 5, 35)
     action.click()
@@ -176,7 +174,6 @@ def change_date(to, browser, attempt2=False):
         if attempts >= 3:
             return False  # date could not be found...
         current = get_current_month(browser)  # datepicker is open...
-        print("current month: " + str(get_current_month(browser)))
         if current < to[0]:  # if current month is < our intended current month...
             next_month(browser)
         attempts += 1
@@ -211,7 +208,6 @@ def change_date(to, browser, attempt2=False):
 def next_month(browser):
     next_month_button =(WebDriverWait(browser, timeout=MAX_TIMEOUT, poll_frequency=POLL_FREQ, ignored_exceptions=ERRORS)
                         .until(EC.presence_of_element_located((By.CLASS_NAME, "react-datepicker__navigation--next"))))
-    print("next month button @", next_month_button.location)
     click_elem(next_month_button, browser)
     time.sleep(SHORT_SLEEP)
 
@@ -240,11 +236,10 @@ def close_popups(browser):
 
 
 # this is just for brandy... TODO: update this function's name...
-def scrape_current_source(browser):
+def scrape_brandy_source(browser):
     source = browser.page_source
     soup = BeautifulSoup(source, "html.parser")
     stations_dict = dict()
-    print("Scraping...")
 
     stations = soup.find_all("div", {"class": "MenuStation"})
 
@@ -254,7 +249,7 @@ def scrape_current_source(browser):
     else:
         for station in stations:
             name = station.find("h2", {"class": "StationHeaderTitle"}).text.strip()
-            if name not in ["Grubb/ Mainline", "Hearth/Pizza", "Soups", "Crossroads"]:
+            if name not in ["Grubb/ Mainline", "Hearth/Pizza", "Soups", "Crossroads", "Compass"]:
                 continue
             else:  # scrape info from this station
                 stations_dict[name] = []
@@ -262,21 +257,53 @@ def scrape_current_source(browser):
                 if parent_categories is None:
                     print("no parents LOL")
                 for parent in parent_categories:
-                    # parentname = parent.find("h2", {"class": "sc-bDumWk gBTLmS CategoryName"}).text.strip()
                     contents = parent.find_all("h3", {"class": "sc-fXSgeo htxwrt HeaderItemName"})
                     for item in contents:
                         stations_dict[name].append(item.text.strip())  # TODO: figure out the single-quote conundrum...
-        # print(stations_dict)
+
+    return stations_dict
+
+
+# this only scrapes info from anteatery pages
+def scrape_anteatery_source(browser):
+    source = browser.page_source
+    soup = BeautifulSoup(source, "html.parser")
+    stations_dict = dict()
+
+    stations = soup.find_all("div", {"class": "MenuStation_no-categories"})
+    if len(stations) == 0:
+        print("no stations")
+
+    else:
+        for station in stations:
+            name = station.find("h2", {"class": "StationHeaderTitle"}).text.strip()
+            if name not in ["Home", "Oven", "Vegan", # "Sizzle Grill", "Bakery",
+                            "Soups", "Fire And Ice Round Grill", "Fire And Ice Sauté"]:
+                continue
+
+            else:  # scrape info from this station
+                stations_dict[name] = []
+                parent_categories = station.find_all("div", {"class": "MenuItemsDiv"})
+                if len(parent_categories) == 0:
+                    print("no parents LOL")
+                for parent in parent_categories:
+                    contents = parent.find_all("h3", {"class": "HeaderItemName"})
+                    for item in contents:
+                        stations_dict[name].append(item.text.strip())
 
     return stations_dict
 
 
 # for testing purposes only
 def main():
-    # brandy_base = scrape_dining_data(BRANDY, {})
+    start_time = time.time()
+    brandy_base = scrape_dining_data(BRANDY, {})
+    print(f"scraped brandy in {time.time() - start_time} seconds.")
+    start_time = time.time()
     ant_base    = scrape_dining_data(ANTEATERY, {})
+    print(f"scraped anteatery in {time.time() - start_time} seconds.")
 
-    # print(brandy_base)
+    print(brandy_base)
     print(ant_base)
 
 
