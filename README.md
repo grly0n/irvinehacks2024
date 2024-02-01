@@ -1,3 +1,5 @@
+This app was created in 42 hours for UC Irvine's IrvineHacks 2024 Hackathon competition by [Gavin](https://github.com/gavindg), [George](https://github.com/grly0n), and [Alex](https://github.com/tenor-ow).
+
 ## Inspiration
 
 Necessity. Have you ever been to the Brandywine or Anteatery websites? We don't like them. It takes a lot of menuing and scrolling to check what food will be served at each location. Compound that with some sluggish load times and you're in for a bad time.
