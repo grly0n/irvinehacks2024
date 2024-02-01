@@ -24,11 +24,11 @@ Our backend is constructed in Python using the FastAPI framework. Our web scrapi
 
 ## What we learned
 
-- Gavin wrote the browser automation and web scraping portion. He ran into a few roadblocks along the way but is happy with how everything turned out. He's also currently working on a project that heavily involves web scraping, so this was great practice!
+- [Gavin](https://github.com/gavindg) wrote the browser automation and web scraping portion. He ran into a few roadblocks along the way but is happy with how everything turned out. He's also currently working on a project that heavily involves web scraping, so this was great practice!
 
-- Our front-end guy, Alex, essentially learned JavaScript and React as he was going through the project (and did a good job of it)! He was    looking to learn the ins and outs of React before the hackathon, and finally got the chance to during the event.
+- Our front-end guy, [Alex](https://github.com/tenor-ow), essentially learned JavaScript and React as he was going through the project (and did a good job of it)! He was looking to learn the ins and outs of React before the hackathon, and finally got the chance to during the event.
 
-- George worked on the backend and database implementation, and he learned that web development as a whole is a tough, but rewarding experience. He is grateful to have had this valuable learning experience, and he hopes to continue learning in his classes and personal projects (for which he now has a few good ideas!)
+- [George](https://github.com/grly0n) worked on the backend and database implementation, and he learned that web development as a whole is a tough, but rewarding experience. He is grateful to have had this valuable learning experience, and he hopes to continue learning in his classes and personal projects (for which he now has a few good ideas!)
 
 ## What's next for Brandeatery
 
