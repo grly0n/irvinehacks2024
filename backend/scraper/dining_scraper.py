@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common import action_chains as AC
 import time
-
+from sys import argv
 
 # constants
 BASE_URL = 'https://uci.campusdish.com/LocationsAndMenus/'
@@ -75,6 +75,8 @@ def scrape_dining_data(eatery_id):
         print(f"working on {eatery_id}...")
         current_date = (1, 28)
         for days_ahead in range(0, DAYS_TO_PULL):  # does 14 days, starting on ideally a sunday
+            date_as_str = date_to_string(current_date)
+            print(date_as_str, end=" -- ")
             meal_map = {}
             if days_ahead > 0:
                 switch_page(to=current_date, browser=browser)
@@ -85,12 +87,10 @@ def scrape_dining_data(eatery_id):
             switch_to_dinner(browser)
             press_done(browser)
             meal_map["Dinner"] = scrape_brandy_source(browser) if eatery_id == BRANDY else scrape_anteatery_source(browser)
-
-            date_as_str = date_to_string(current_date)
-            print(date_as_str, end=" ")
             if date_as_str not in database.keys():
                 database[date_as_str] = {}
             database[date_as_str] = meal_map
+            print(meal_map, end="\n\n")
             current_date = next_date(current_date)
         print()
     except Exception as e:
@@ -319,8 +319,9 @@ def scrape_anteatery_source(browser):
 
 # for testing purposes only
 def main():
-    print(get_info(BRANDY))
-    print(get_info(ANTEATERY))
+    if argv[1] == "dev":
+        print(get_info(BRANDY))
+        # print(get_info(ANTEATERY))
 
 
 if __name__ == "__main__":
